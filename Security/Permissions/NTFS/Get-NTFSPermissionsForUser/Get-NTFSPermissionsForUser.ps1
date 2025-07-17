@@ -1,6 +1,5 @@
 # =============================================================================
 # Script: Get-NTFSPermissionsForUser.ps1
-# Created: 2025-03-18 17:20:00 UTC
 # Author: maxdaylight
 # Last Updated: 2025-07-08 15:45:00 UTC
 # Updated By: maxdaylight

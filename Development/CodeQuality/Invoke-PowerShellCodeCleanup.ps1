@@ -1,11 +1,10 @@
 # =============================================================================
 # Script: Invoke-PowerShellCodeCleanup.ps1
-# Created: 6
-# Author: 7
-# Last Updated: 2025-07-15 23:30:00 UTC
+# Author: maxdaylight
+# Last Updated: 2025-07-17 17:15:00 UTC
 # Updated By: maxdaylight
-# Version: 1.6.8
-# Additional Info: Aligned operators vertically for PSScriptAnalyzer compliance
+# Version: 1.6.9
+# Additional Info: Fixed duplicate Repair-InlineComment call causing workflow failures
 # =============================================================================
 
 <#
@@ -503,5 +502,4 @@ if ($MyInvocation.InvocationName -ne '.') {
         Write-Information -MessageData "Re-running analysis after fixes..." -InformationAction Continue
         Find-NewlineError -FilePath $targetFilePath
     }
-    Repair-InlineComment -FilePath $targetFilePath
 }
