@@ -1,0 +1,35 @@
+{
+	"folders": [
+		{
+			"path": "Scripts"
+		}
+    ],
+    "settings": {
+        "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+        "powershell.codeFormatting.preset": "Custom",
+        "powershell.codeFormatting.alignPropertyValuePairs": false,
+        "powershell.codeFormatting.autoCorrectAliases": false,
+        "powershell.codeFormatting.useCorrectCasing": false,
+        "powershell.codeFormatting.whitespaceAroundOperator": false,
+        "powershell.codeFormatting.whitespaceAfterSeparator": false,
+        "powershell.codeFormatting.whitespaceInsideBrace": false,
+        "powershell.codeFormatting.whitespaceBetweenParameters": false,
+        "powershell.scriptAnalysis.enable": true,
+        "powershell.scriptAnalysis.settingsPath": ".vscode/PSScriptAnalyzerSettings.psd1",
+        "github.copilot.enable": {
+            "*": true,
+            "plaintext": false,
+            "markdown": true,
+            "powershell": true
+        },
+        "powershell.integratedConsole.showOnStartup": false,
+        "powershell.developer.bundledModulesPath": "",
+        "powershell.enableProfileLoading": false,
+        "files.associations": {
+            "*.ps1": "powershell",
+            "*.psm1": "powershell",
+            "*.psd1": "powershell"
+        },
+        "files.defaultLanguage": "powershell"
+    }
+}
