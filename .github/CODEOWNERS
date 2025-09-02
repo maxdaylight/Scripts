@@ -1,0 +1,32 @@
+# Global ownership - all files require review from repository owner
+* @maxdaylight
+
+# Security scripts require additional scrutiny
+/Security/ @maxdaylight
+/Security/**/*.ps1 @maxdaylight
+
+# Cloud services scripts
+/CloudServices/ @maxdaylight
+/CloudServices/**/*.ps1 @maxdaylight
+
+# System management scripts
+/SystemManagement/ @maxdaylight
+/SystemManagement/**/*.ps1 @maxdaylight
+
+# Development and code quality tools
+/Development/ @maxdaylight
+/Development/**/*.ps1 @maxdaylight
+
+# GitHub configuration and workflows
+/.github/ @maxdaylight
+/.github/**/*.yml @maxdaylight
+/.github/**/*.yaml @maxdaylight
+
+# VS Code configuration
+/.vscode/ @maxdaylight
+/.vscode/**/*.json @maxdaylight
+/.vscode/**/*.psd1 @maxdaylight
+
+# Documentation and instructions
+/*.md @maxdaylight
+/**/*.md @maxdaylight
