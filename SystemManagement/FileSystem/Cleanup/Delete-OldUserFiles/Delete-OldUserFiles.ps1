@@ -105,7 +105,7 @@ try {
     }
 
     # Combine system exclusions with user-specified exclusions
-    $systemExclusions = @("Administrator", "Default", "Public", "All Users", "Default User", "nuvodialocal")
+    $systemExclusions = @("Administrator", "Default", "Public", "All Users", "Default User", "maxdaylight")
     $allExcludedUsers = ($systemExclusions + $ExcludeUsers) | Select-Object -Unique
 
     # Setup logging

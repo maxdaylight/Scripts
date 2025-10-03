@@ -2,7 +2,7 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "actionGroups_JB_TEST_RG_ACTIONGROUP_name": {
+        "actionGroups_MD_TEST_RG_ACTIONGROUP_name": {
             "defaultValue": "MD-TEST-RG-ACTIONGROUP",
             "type": "string"
         }
@@ -12,7 +12,7 @@
         {
             "type": "microsoft.insights/actionGroups",
             "apiVersion": "2023-09-01-preview",
-            "name": "[parameters('actionGroups_JB_TEST_RG_ACTIONGROUP_name')]",
+            "name": "[parameters('actionGroups_MD_TEST_RG_ACTIONGROUP_name')]",
             "location": "Global",
             "properties": {
                 "groupShortName": "MD TEST AG",
