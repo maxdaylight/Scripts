@@ -26,7 +26,7 @@ $script:expireindays = 14                  # Integer: Number of days ahead to no
 $script:logging = "Enabled"                # "Enabled" or "Disabled"
 $script:logFile = "C:\\Password_Change_Notification\\Password_Change_Notification_14d_log.csv"  # CSV log path
 $script:testing = "Enabled"               # "Enabled" or "Disabled". If Enabled, all mail goes to $testRecipient
-$script:testRecipient = 'maxdaylight@outlook.com'                 # Your test email address when testing is Enabled
+$script:testRecipient = 'maxdaylight@maximized.site'                 # Your test email address when testing is Enabled
 $script:logRetentionDays = 90              # Integer: days of log retention
 
 # Microsoft Graph application credentials (Application permissions)
