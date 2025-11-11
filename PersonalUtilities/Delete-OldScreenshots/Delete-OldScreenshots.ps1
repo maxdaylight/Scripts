@@ -39,7 +39,7 @@
 param(
     [Parameter(Mandatory = $false)]
     [ValidateScript({ Test-Path $_ })]
-    [string]$FolderPath = "C:\Users\maxdaylight\\Pictures\Screenshots",
+    [string]$FolderPath = "\\WYK-FP01\HomeFolders$\aegis\Pictures\Screenshots",
 
     [Parameter(Mandatory = $false)]
     [ValidateRange(1, 365)]
