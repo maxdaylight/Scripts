@@ -188,7 +188,7 @@ All scripts must run fully unattended, pass static code analysis, and handle sen
 
 ## Terminal Command Execution
 
-- Always run PowerShell commands directly in the active terminal without wrapping them in launcher invocations such as `pwsh -Command` or `powershell -Command`, unless a task explicitly requires a new session.
+- Always run PowerShell commands directly in the active terminal without wrapping them in launcher invocations such as `pwsh -Command`, &, or `powershell -Command`, unless a task explicitly requires a new session.
 - Use wrapper commands only when executing non-PowerShell utilities that require a different shell context.
 
 ---

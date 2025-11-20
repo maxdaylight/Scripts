@@ -1,10 +1,10 @@
 # =============================================================================
 # Script: Find-LargeFiles.ps1
 # Author: maxdaylight
-# Last Updated: 2025-11-20 21:31:32 UTC
+# Last Updated: 2025-11-20 23:37:54 UTC
 # Updated By: GitHub Copilot
-# Version: 1.0.1
-# Additional Info: Resolved analyzer compliance issues and improved formatting
+# Version: 1.0.11
+# Additional Info: Normalized property indentation within drive scan records
 # =============================================================================
 
 <#!
@@ -42,7 +42,10 @@ param(
     [switch]$IncludeHidden,
 
     [Parameter()]
-    [switch]$IncludeSystem
+    [switch]$IncludeSystem,
+
+    [Parameter()]
+    [string[]]$ExcludedDrives = @()
 )
 
 Set-StrictMode -Version Latest
@@ -196,14 +199,14 @@ function Invoke-DriveScan {
 
         if ($item.Length -ge $MinimumSizeBytes) {
             $records.Add([PSCustomObject]@{
-            Drive             = $Drive.Name
-            Root              = $Drive.Root
-            FullName          = $item.FullName
-            SizeBytes         = $item.Length
-            SizeReadable      = ConvertTo-ReadableSize -Bytes $item.Length
-            SizeGB            = [math]::Round($item.Length / 1GB, 2)
-            LastWriteTimeUtc  = $item.LastWriteTimeUtc
-        })
+                Drive            = $Drive.Name
+                Root             = $Drive.Root
+                FullName         = $item.FullName
+                SizeBytes        = $item.Length
+                SizeReadable     = ConvertTo-ReadableSize -Bytes $item.Length
+                SizeGB           = [math]::Round($item.Length / 1GB, 2)
+                LastWriteTimeUtc = $item.LastWriteTimeUtc
+            })
         }
     }
 
@@ -234,16 +237,34 @@ $logContent = [System.Collections.Generic.List[string]]::new()
 $scanWarnings = [System.Collections.Generic.List[string]]::new()
 
 $minimumSizeBytes = [long]($MinimumSizeGB * 1GB)
+$normalizedExcludedDrives = @()
+foreach ($drive in $ExcludedDrives) {
+    if (-not [string]::IsNullOrWhiteSpace($drive)) {
+        $normalizedDrive = $drive.Trim().TrimEnd(':').ToUpperInvariant()
+        if ($normalizedDrive -match '^[A-Z]$') {
+            $normalizedExcludedDrives += $normalizedDrive
+        }
+    }
+}
+$normalizedExcludedDrives = @($normalizedExcludedDrives | Sort-Object -Unique)
 
 try {
     Write-ColorOutput -Message ("Starting large file discovery at threshold {0} GB." -f $MinimumSizeGB) -Color 'Cyan'
 
-    $drives = Get-TargetDrive
+    $drives = Get-TargetDrive | Where-Object {
+        $driveName = $_.Name.Trim().TrimEnd(':').ToUpperInvariant()
+        $normalizedExcludedDrives -notcontains $driveName
+    }
     $logContent.Add("Find-LargeFiles execution on {0} UTC" -f (Get-UtcTimestamp))
     $logContent.Add("Computer Name: $computerName")
     $logContent.Add("Minimum Size (GB): $MinimumSizeGB")
     $logContent.Add("Include Hidden Files: {0}" -f $IncludeHidden.IsPresent)
     $logContent.Add("Include System Files: {0}" -f $IncludeSystem.IsPresent)
+    if ($normalizedExcludedDrives.Count -gt 0) {
+        $logContent.Add("Excluded Drives: {0}" -f ($normalizedExcludedDrives -join ', '))
+    } else {
+        $logContent.Add('Excluded Drives: None')
+    }
     if ($drives) {
         $logContent.Add("Drives Scanned: {0}" -f ($drives.Name -join ', '))
     } else {
@@ -256,7 +277,7 @@ try {
         Write-ColorOutput -Message $message -Color 'Yellow'
         $logContent.Add($message)
         $logContent | Out-File -FilePath $script:LogFilePath -Encoding UTF8
-        exit 0
+        return $script:LogFilePath
     }
 
     $results = [System.Collections.Generic.List[psobject]]::new()
@@ -277,9 +298,10 @@ try {
 
     $resultsSorted = $results | Sort-Object -Property SizeBytes -Descending
 
-    if ($scanWarnings.Count -gt 0) {
+    $warningsToLog = @($scanWarnings | Where-Object { $_ -notmatch '(?i)Access to the path' })
+    if ($warningsToLog.Count -gt 0) {
         $logContent.Add('Warnings Encountered:')
-        foreach ($warning in $scanWarnings) {
+        foreach ($warning in $warningsToLog) {
             $logContent.Add("- $warning")
         }
         $logContent.Add('')
@@ -287,18 +309,24 @@ try {
 
     if ($resultsSorted.Count -gt 0) {
         Write-ColorOutput -Message ("Large files found: {0}" -f $resultsSorted.Count) -Color 'Green'
-        $logContent.Add('Drive\tFullPath\tSize (Readable)\tSize (GB)\tSize (Bytes)\tLast Write Time (UTC)')
+        $logContent.Add('Large file details (sorted by size descending):')
 
-        foreach ($record in $resultsSorted) {
-            $logContent.Add(
-                ("{0}`t{1}`t{2}`t{3}`t{4}`t{5}" -f
-                    $record.Drive,
-                    $record.FullName,
-                    $record.SizeReadable,
-                    [string]$record.SizeGB,
-                    $record.SizeBytes,
-                    $record.LastWriteTimeUtc.ToString('yyyy-MM-dd HH:mm:ss'))
-            )
+        $tableObjects = foreach ($record in $resultsSorted) {
+            [PSCustomObject]@{
+                Drive                   = $record.Drive
+                'Full Path'             = $record.FullName
+                'Size (Readable)'       = $record.SizeReadable
+                'Size (GB)'             = $record.SizeGB
+                'Size (Bytes)'          = $record.SizeBytes
+                'Last Write Time (UTC)' = $record.LastWriteTimeUtc.ToString('yyyy-MM-dd HH:mm:ss')
+            }
+        }
+
+        $tableString = $tableObjects | Format-Table -AutoSize | Out-String
+        foreach ($line in ($tableString -split [Environment]::NewLine)) {
+            if (-not [string]::IsNullOrWhiteSpace($line)) {
+                $logContent.Add($line)
+            }
         }
     } else {
         $message = 'No files met the specified size threshold.'
@@ -308,7 +336,7 @@ try {
 
     $logContent | Out-File -FilePath $script:LogFilePath -Encoding UTF8
     Write-ColorOutput -Message ("Log saved to $script:LogFilePath") -Color 'Green'
-    exit 0
+    return $script:LogFilePath
 } catch {
     Write-ColorOutput -Message ("[SYSTEM ERROR DETECTED] $($_.Exception.Message)") -Color 'Red'
     throw
