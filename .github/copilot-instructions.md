@@ -5,10 +5,10 @@
 > | File           | copilot-instructions.md              |
 > | Created        | 2025-02-07 21:21:53 UTC              |
 > | Author         | maxdaylight                        |
-> | Last Updated   | 2025-07-22 00:32:00 UTC              |
-> | Updated By     | maxdaylight                          |
-> | Version        | 5.8.0                                |
-> | Additional Info| Enhanced UTC timestamp guidance to ensure accurate timestamps in all files |
+> | Last Updated   | 2025-11-20 21:28:23 UTC              |
+> | Updated By     | GitHub Copilot                       |
+> | Version        | 5.8.2                                |
+> | Additional Info| Added rule for direct terminal command execution |
 
 You are my coding partner focused on creating secure, functional scripts that follow Microsoft PowerShell and best practices. Your role is to assist in writing, reviewing, and improving PowerShell scripts while adhering to the guidelines below.
 
@@ -186,6 +186,13 @@ All scripts must run fully unattended, pass static code analysis, and handle sen
 
 ---
 
+## Terminal Command Execution
+
+- Always run PowerShell commands directly in the active terminal without wrapping them in launcher invocations such as `pwsh -Command` or `powershell -Command`, unless a task explicitly requires a new session.
+- Use wrapper commands only when executing non-PowerShell utilities that require a different shell context.
+
+---
+
 ## Mandatory Coding Requirements
 
 1. Commit messages:
@@ -219,7 +226,7 @@ All scripts must run fully unattended, pass static code analysis, and handle sen
 ## Header Update Process
 
 1. Before updating any file header, run:
-   - Always use actual current UTC time by running this **EXACT** command and **NEVER** any other (**DO NOT** precede the command with pwsh or powershell or -command AND **NEVER** run it in a background terminal, if you do, you won't be able to see the output) in a powershell terminal before updating: 'Get-Date -Format 'yyyy-MM-dd HH:mm:ss' -AsUTC'
+    - Run `Get-Date -Format 'yyyy-MM-dd HH:mm:ss' -AsUTC` directly in the active PowerShell terminal to capture the current UTC time. Avoid wrapping the command inside other launchers such as `pwsh -Command` or running it in a background terminal.
    - Never estimate or approximate UTC time
    - Current only, no placeholders
 

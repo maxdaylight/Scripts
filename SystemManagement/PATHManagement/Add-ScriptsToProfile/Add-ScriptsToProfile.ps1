@@ -1,10 +1,10 @@
 # =============================================================================
 # Script: Add-ScriptsToProfile.ps1
 # Author: maxdaylight
-# Last Updated: 2025-11-10 23:53:59 UTC
+# Last Updated: 2025-11-20 21:28:33 UTC
 # Updated By: GitHub Copilot
-# Version: 1.0.8
-# Additional Info: Normalized profile script paths to UNC for mapped drive compatibility
+# Version: 1.0.9
+# Additional Info: Skip adding duplicate profile functions during loader updates
 # =============================================================================
 
 <#
@@ -246,9 +246,27 @@ function Get-ProfileRegionContent {
     [void]$builder.AppendLine("    `$scriptBlockText = ""& '`$escapedPath' @args""")
     [void]$builder.AppendLine('    $invocationBlock = [ScriptBlock]::Create($scriptBlockText)')
     [void]$builder.AppendLine('    $targetPath = "Function:\\global:" + $functionName')
-    [void]$builder.AppendLine('    Set-Item -Path $targetPath -Value $invocationBlock -Force')
+    [void]$builder.AppendLine('    $shouldUpdateFunction = $true')
+    [void]$builder.AppendLine('    if (Test-Path -Path $targetPath) {')
+    [void]$builder.AppendLine('        $existingItem = Get-Item -Path $targetPath')
+    [void]$builder.AppendLine('        if ($existingItem -and $existingItem.ScriptBlock.ToString().Trim() -eq $invocationBlock.ToString().Trim()) {')
+    [void]$builder.AppendLine('            $shouldUpdateFunction = $false')
+    [void]$builder.AppendLine('        }')
+    [void]$builder.AppendLine('    }')
+    [void]$builder.AppendLine('    if ($shouldUpdateFunction) {')
+    [void]$builder.AppendLine('        Set-Item -Path $targetPath -Value $invocationBlock -Force')
+    [void]$builder.AppendLine('    }')
     [void]$builder.AppendLine('    $extensionTarget = "Function:\\global:" + $functionName + ".ps1"')
-    [void]$builder.AppendLine('    Set-Item -Path $extensionTarget -Value $invocationBlock -Force')
+    [void]$builder.AppendLine('    $shouldUpdateExtension = $true')
+    [void]$builder.AppendLine('    if (Test-Path -Path $extensionTarget) {')
+    [void]$builder.AppendLine('        $existingExtension = Get-Item -Path $extensionTarget')
+    [void]$builder.AppendLine('        if ($existingExtension -and $existingExtension.ScriptBlock.ToString().Trim() -eq $invocationBlock.ToString().Trim()) {')
+    [void]$builder.AppendLine('            $shouldUpdateExtension = $false')
+    [void]$builder.AppendLine('        }')
+    [void]$builder.AppendLine('    }')
+    [void]$builder.AppendLine('    if ($shouldUpdateExtension) {')
+    [void]$builder.AppendLine('        Set-Item -Path $extensionTarget -Value $invocationBlock -Force')
+    [void]$builder.AppendLine('    }')
     [void]$builder.AppendLine('}')
     [void]$builder.AppendLine("#endregion $RegionName - Managed by Add-ScriptsToProfile.ps1")
 
