@@ -1,10 +1,10 @@
 # =============================================================================
 # Script: Add-ScriptsToProfile.ps1
 # Author: maxdaylight
-# Last Updated: 2025-11-20 21:28:33 UTC
+# Last Updated: 2025-11-23 20:47:05 UTC
 # Updated By: GitHub Copilot
-# Version: 1.0.9
-# Additional Info: Skip adding duplicate profile functions during loader updates
+# Version: 1.0.10
+# Additional Info: Stabilize profile region pipeline formatting and dedupe updates
 # =============================================================================
 
 <#
@@ -232,7 +232,9 @@ function Get-ProfileRegionContent {
         [void]$builder.AppendLine('$scriptLoaderParameters.Recurse = $true')
     }
 
-    [void]$builder.AppendLine('Get-ChildItem @scriptLoaderParameters | Sort-Object -Property FullName | ForEach-Object -Process {')
+    [void]$builder.AppendLine('Get-ChildItem @scriptLoaderParameters |')
+    [void]$builder.AppendLine('    Sort-Object -Property FullName |')
+    [void]$builder.AppendLine('    ForEach-Object -Process {')
     [void]$builder.AppendLine('    $functionName = $_.BaseName')
     [void]$builder.AppendLine('    $scriptPath = $_.FullName')
     [void]$builder.AppendLine('    if ($_.PSDrive -and -not [string]::IsNullOrEmpty($_.PSDrive.DisplayRoot)) {')
@@ -333,22 +335,31 @@ function Update-ProfileFile {
     $regionStart = "#region $RegionName - Managed by Add-ScriptsToProfile.ps1"
     $regionEnd = "#endregion $RegionName - Managed by Add-ScriptsToProfile.ps1"
     $regexPattern = "(?s){0}.*?{1}" -f [System.Text.RegularExpressions.Regex]::Escape($regionStart), [System.Text.RegularExpressions.Regex]::Escape($regionEnd)
-    $match = [System.Text.RegularExpressions.Regex]::Match($profileContent, $regexPattern)
-
+    $regionMatches = [System.Text.RegularExpressions.Regex]::Matches($profileContent, $regexPattern)
     $normalizedNewContent = $RegionContent.Trim()
 
-    if ($match.Success) {
-        $existingContent = $match.Value.Trim()
-        if ($existingContent -eq $normalizedNewContent) {
+    if ($regionMatches.Count -gt 0) {
+        $existingContent = $regionMatches[0].Value.Trim()
+        $containsSingleMatch = $regionMatches.Count -eq 1
+        if ($containsSingleMatch -and ($existingContent -eq $normalizedNewContent)) {
             Write-LogEntry -Message 'Profile already contains the latest script loader region. No action required.' -Severity 'Info'
             return
         }
 
         if ($PSCmdlet.ShouldProcess($ProfilePath, 'Update managed script loader region')) {
-            $updatedContent = [System.Text.RegularExpressions.Regex]::Replace($profileContent, $regexPattern, $RegionContent)
+            $prunedContent = [System.Text.RegularExpressions.Regex]::Replace($profileContent, $regexPattern, [string]::Empty).TrimEnd()
+            $contentToWrite = if ([string]::IsNullOrWhiteSpace($prunedContent)) {
+                $RegionContent
+            } else {
+                $prunedContent + [Environment]::NewLine + [Environment]::NewLine + $RegionContent
+            }
+
             $backupPath = Backup-ProfileFile -ProfilePath $ProfilePath
-            Set-Content -Path $ProfilePath -Value $updatedContent -Encoding UTF8
+            Set-Content -Path $ProfilePath -Value $contentToWrite -Encoding UTF8
             $successMessage = if ($backupPath) { 'Profile updated. Backup saved to {0}' -f $backupPath } else { 'Profile updated.' }
+            if (-not $containsSingleMatch) {
+                $successMessage += ' Duplicate managed regions were removed.'
+            }
             Write-LogEntry -Message $successMessage -Severity 'Success'
         } else {
             Write-LogEntry -Message 'Profile update skipped due to WhatIf preference.' -Severity 'Info'
